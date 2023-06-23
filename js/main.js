@@ -6,18 +6,68 @@ function formatNumber(num) {
   return num?.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 }
 
-//Hide update button when create new employee
-const handleClickOpenAddEmployee = () => {
-  console.log("tesst");
-  document.getElementById("btnCapNhat").style.display = "none";
+const getInfoByForm = () => {
+  const account = getElement("#tknv").value;
+  const name = getElement("#name").value;
+  const email = getElement("#email").value;
+  const password = getElement("#password").value;
+  const dayWork = getElement("#datepicker").value;
+  const salary = +getElement("#luongCB").value;
+  const position = getElement("#chucvu").value;
+  const time = +getElement("#gioLam").value;
+  const staff = {
+    account,
+    name,
+    email,
+    password,
+    dayWork,
+    salary,
+    position,
+    time,
+  };
+  return staff;
 };
 
-const handleClose = () => {
+function showModal() {
   let element = document.getElementById("myModal");
   let tag = document.getElementsByTagName("body")[0];
+  element.classList.add("show");
+  element.style.display = "block";
+  element.style.background = "#85858594";
+  tag.classList.add("modal-open");
+}
+
+function handleClose() {
+  let element = document.getElementById("myModal");
+  let tag = document.getElementsByTagName("body")[0];
+  const accountForm = getElement("#tknv");
+
   element.classList.remove("show");
   element.style.display = "none";
   tag.classList.remove("modal-open");
+  accountForm.disabled = false;
+}
+
+//Hide update button when create new employee
+const handleClickOpenAddEmployee = () => {
+  const select = document.getElementById("chucvu");
+  document.getElementById("btnCapNhat").style.display = "unset";
+
+  for (var i = 0; i < select.options.length; i++) {
+    let option = select.options[i];
+    option.selected = false;
+  }
+  getElement("#tknv").value = "";
+  getElement("#name").value = "";
+  getElement("#email").value = "";
+  getElement("#password").value = "";
+  getElement("#datepicker").value = "";
+  getElement("#luongCB").value = "";
+  getElement("#gioLam").value = "";
+
+  document.getElementById("btnCapNhat").style.display = "none";
+  document.getElementById("btnThemNV").style.display = "unset";
+  document.getElementById("header-title").innerHTML = "Thêm nhân viên";
 };
 
 //Validate
@@ -61,9 +111,9 @@ const handleChangeAccount = () => {
     document.querySelector(".validateAccount").innerHTML =
       "Vui lòng nhập tên tài khoản tối đa 4 - 6 kí tự và không để trống";
     return true;
-  } else {
-    document.querySelector(".validateAccount").innerHTML = "";
   }
+
+  document.querySelector(".validateAccount").innerHTML = "";
 };
 
 const handleChangeName = () => {
@@ -75,8 +125,12 @@ const handleChangeName = () => {
   } else if (name) {
     let splitString = name.split("");
     let foundNumber = 0;
+
     for (let i = 0; i < splitString.length; i++) {
-      if (splitString[i] * 1) {
+      if (
+        splitString[i] * 1 ||
+        (splitString[i] !== " " && splitString[i] * 1 === 0)
+      ) {
         foundNumber = foundNumber + 1;
       }
     }
@@ -116,7 +170,6 @@ const handleChangeEmail = () => {
 
 const handleChangeDatepicker = () => {
   const datepicker = document.querySelector("#datepicker").value;
-  console.log({ datepicker });
   if (!datepicker || kiemTraNgayLam(datepicker)) {
     document.querySelector(".validateDatepicker").innerHTML =
       "Vui lòng nhập đúng định dạng và không để trống ngày làm";
@@ -160,24 +213,8 @@ const handleChangeTime = () => {
 // var staffList = new STAFFLIST();
 let staffList = JSON.parse(localStorage.getItem("data")) ?? [];
 getElement("#btnThemNV").onclick = function () {
-  const account = getElement("#tknv").value;
-  const name = getElement("#name").value;
-  const email = getElement("#email").value;
-  const password = getElement("#password").value;
-  const dayWork = getElement("#datepicker").value;
-  const salary = +getElement("#luongCB").value;
-  const position = getElement("#chucvu").value;
-  const time = +getElement("#gioLam").value;
-  const staff = {
-    account,
-    name,
-    email,
-    password,
-    dayWork,
-    salary,
-    position,
-    time,
-  };
+  let modalBackdrop = document.querySelector(".modal-backdrop");
+  const staff = getInfoByForm();
 
   if (
     handleChangeAccount() ||
@@ -191,10 +228,34 @@ getElement("#btnThemNV").onclick = function () {
     return;
   }
 
+  let foundDataAccount = staffList?.find(
+    (item) => item?.account === getElement("#tknv").value
+  );
+  let foundDataEmail = staffList?.find(
+    (item) => item?.email === getElement("#email").value
+  );
+
+  if (foundDataAccount) {
+    document.querySelector(".validateAccount").innerHTML =
+      "Tài khoản đã tồn tại";
+    return true;
+  }
+
+  if (foundDataEmail) {
+    document.querySelector(".validateEmail").innerHTML = "Email đã tồn tại";
+    return true;
+  }
+  modalBackdrop.classList.remove("show");
+  modalBackdrop.classList.remove("modal-backdrop");
+
+  //Add data to list
   staffList.unshift(staff);
   localStorage.setItem("data", JSON.stringify(staffList));
+  hienThi();
+  handleClose();
 };
 
+/////////////////////////////////////Handle and show result in table list////////////////////////////////////////////////
 const tinhLuong = function (nv) {
   if (nv.position == "boss") return nv.salary * 3;
   if (nv.position == "manager") return nv.salary * 2;
@@ -208,32 +269,62 @@ const xepHang = function (nv) {
   return "Trung Bình";
 };
 
-const handleUpdate = (account) => {
-  console.log({ account });
-  let founData = staffList?.find((item) => item?.account === account);
-  console.log({ founData });
+const handleUpdateForm = (account) => {
+  let foundData = staffList?.find((item) => item?.account === account);
+  const select = document.getElementById("chucvu");
+  const accountForm = document.getElementById("tknv");
+  accountForm.disabled = true;
+  document.getElementById("btnCapNhat").style.display = "unset";
 
-  getElement("#tknv").value = founData.account;
-  getElement("#name").value = founData.name;
-  getElement("#email").value = founData.email;
-  getElement("#password").value = founData.password;
-  getElement("#datepicker").value = founData.dayWork;
-  getElement("#luongCB").value = founData.salary;
-  getElement("#chucvu").value = founData.positon;
-  getElement("#gioLam").value = founData.time;
-  getElement("#btnCapNhat").disabled = false;
-  getElement("#btnThemNV").disabled = true;
+  for (var i = 0; i < select.options.length; i++) {
+    let option = select.options[i];
+    if (option.value == foundData.position) {
+      option.selected = true;
+    }
+  }
 
-  let element = document.getElementById("myModal");
-  let tag = document.getElementsByTagName("body")[0];
-  element.classList.add("show");
-  element.style.display = "block";
-  element.style.background = "#85858594";
-  tag.classList.add("modal-open");
+  getElement("#tknv").value = foundData.account;
+  getElement("#name").value = foundData.name;
+  getElement("#email").value = foundData.email;
+  getElement("#password").value = foundData.password;
+  getElement("#datepicker").value = foundData.dayWork;
+  getElement("#luongCB").value = foundData.salary;
+  getElement("#gioLam").value = foundData.time;
+  showModal();
+  document.getElementById("btnThemNV").style.display = "none";
+  document.getElementById("header-title").innerHTML = "Cập nhật thông tin";
 };
+
+const handleUpdateInfoEmployee = () => {
+  const staff = getInfoByForm();
+
+  for (let i = 0; i < staffList.length; i++) {
+    if (staffList[i].account === staff.account) {
+      staffList[i] = staff;
+    }
+  }
+
+  localStorage.setItem("data", JSON.stringify(staffList));
+  hienThi();
+  handleClose();
+};
+
+const handleDelete = (account) => {
+  let newData = staffList?.filter((e) => e.account !== account);
+  localStorage.setItem("data", JSON.stringify(newData));
+  hienThi();
+};
+
+const mapPosition = (position) => {
+  if (position === "boss") return "Sếp";
+  if (position === "manager") return "Trưởng phòng";
+  if (position === "staff") return "Nhân viên";
+};
+
 // Show result
 function hienThi() {
   var content = [];
+  staffList = JSON.parse(localStorage.getItem("data"));
   for (var i = 0; i < staffList.length; i++) {
     var nv = staffList[i];
     content += `<tr>
@@ -241,14 +332,16 @@ function hienThi() {
     <td>${nv.name}</td>
     <td>${nv.email}</td>
     <td>${nv.dayWork}</td>
-    <td>${nv.position}</td>
+    <td>${mapPosition(nv.position)}</td>
     <td>${formatNumber(tinhLuong(nv).toFixed(2))}</td>
     <td>${xepHang(nv)}</td>
     <td>
-      <button id="update-data" type="button" class="btn btn-success update-button" onclick="handleUpdate('${
+      <button id="update-data" type="button" class="btn btn-success update-button" onclick="handleUpdateForm('${
         nv.account
       }')">Cập nhật</button>
-      <button id="delete-data" type="button" class="btn btn-danger delete-button">Xóa</button>
+      <button id="delete-data" type="button" class="btn btn-danger delete-button" onclick="handleDelete('${
+        nv.account
+      }')">Xóa</button>
     </td>
     </tr>
     `;
