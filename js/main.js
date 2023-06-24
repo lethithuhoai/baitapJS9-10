@@ -297,6 +297,7 @@ const xepHang = function (nv) {
 
 const handleSearch = () => {
   const searchData = getElement("#searchName").value;
+  staffList = JSON.parse(localStorage.getItem("data"));
 
   let dataListSearch = [];
   for (let i = 0; i < staffList.length; i++) {
@@ -311,7 +312,8 @@ const handleSearch = () => {
 
   localStorage.setItem("dataSearch", JSON.stringify(dataListSearch));
   if (!searchData) {
-    localStorage.setItem("dataSearch", JSON.stringify(staffList));
+    let data = localStorage.getItem("data");
+    localStorage.setItem("dataSearch", JSON.stringify(data));
   }
 
   hienThi(JSON.parse(localStorage.getItem("dataSearch")) ?? []);
@@ -319,7 +321,8 @@ const handleSearch = () => {
 
 const handleChangeSearch = (e) => {
   if (!e?.target?.value) {
-    localStorage.setItem("dataSearch", JSON.stringify(staffList));
+    let data = localStorage.getItem("data");
+    localStorage.setItem("dataSearch", data);
   }
   hienThi(JSON.parse(localStorage.getItem("dataSearch")) ?? []);
 };
@@ -365,8 +368,10 @@ const handleUpdateInfoEmployee = () => {
 };
 
 const handleDelete = (account) => {
-  let newData = staffList?.filter((e) => e.account !== account);
+  const data = JSON.parse(localStorage.getItem("data"));
+  let newData = data?.filter((e) => e.account !== account);
   localStorage.setItem("data", JSON.stringify(newData));
+  localStorage.setItem("dataSearch", JSON.stringify([]));
   hienThi(JSON.parse(localStorage.getItem("data")) ?? []);
 };
 
