@@ -155,8 +155,9 @@
                       class="form-control"
                       placeholder="Loại nhân viên"
                       id="searchName"
+                      oninput="handleChangeSearch(event)"
                     />
-                    <div class="input-group-prepend">
+                    <div class="input-group-prepend" onclick="handleSearch()">
                       <span class="input-group-text" id="btnTimNV"
                         ><i class="fa fa-search"></i
                       ></span>
