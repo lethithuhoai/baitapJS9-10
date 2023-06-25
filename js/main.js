@@ -221,6 +221,7 @@ const handleChangePosition = () => {
   if (!chucvu || chucvu === "Chọn chức vụ") {
     document.querySelector(".validatePosition").innerHTML =
       "Vui lòng chọn chức vụ";
+    return true;
   } else {
     document.querySelector(".validatePosition").innerHTML = "";
   }
@@ -230,6 +231,7 @@ const handleChangeTime = () => {
   if (!gioLam || gioLam < 80 || gioLam > 200) {
     document.querySelector(".validateTime").innerHTML =
       "Vui lòng nhập thời gian từ 80 - 200 giờ, không để trống";
+    return true;
   } else {
     document.querySelector(".validateTime").innerHTML = "";
   }
@@ -249,7 +251,8 @@ getElement("#btnThemNV").onclick = function () {
     handleChangeDatepicker() ||
     handleChangeSalary() ||
     handleChangePosition() ||
-    handleChangeTime()
+    handleChangeTime() ||
+    handleChangePassword()
   ) {
     return;
   }
@@ -355,6 +358,19 @@ const handleUpdateForm = (account) => {
 
 const handleUpdateInfoEmployee = () => {
   const staff = getInfoByForm();
+
+  if (
+    handleChangeAccount() ||
+    handleChangeEmail() ||
+    handleChangeName() ||
+    handleChangeDatepicker() ||
+    handleChangeSalary() ||
+    handleChangePosition() ||
+    handleChangeTime() ||
+    handleChangePassword()
+  ) {
+    return;
+  }
 
   for (let i = 0; i < staffList.length; i++) {
     if (staffList[i].account === staff.account) {
